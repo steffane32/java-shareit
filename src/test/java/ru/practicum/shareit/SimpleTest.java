@@ -4,10 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ShareItTests {
-
+public class SimpleTest {
     @Test
-    void contextLoads() {
+    public void testContext() {
+        System.out.println("Контекст загружен!");
     }
-
 }
