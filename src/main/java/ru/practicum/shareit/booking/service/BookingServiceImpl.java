@@ -38,31 +38,25 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto createBooking(Long userId, BookingCreateDto bookingCreateDto) {
         log.info("Создание бронирования пользователем id: {}", userId);
 
-        // Проверка дат
         if (bookingCreateDto.getEnd().isBefore(bookingCreateDto.getStart()) ||
                 bookingCreateDto.getEnd().equals(bookingCreateDto.getStart())) {
             throw new ValidationException("Дата окончания должна быть позже даты начала");
         }
 
-        // Проверка пользователя
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
 
-        // Проверка вещи
         Item item = itemRepository.findById(bookingCreateDto.getItemId())
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + bookingCreateDto.getItemId() + " не найдена"));
 
-        // Проверка, что пользователь не является владельцем вещи
         if (item.getOwner().getId().equals(userId)) {
             throw new NotFoundException("Владелец не может забронировать свою вещь");
         }
 
-        // Проверка доступности вещи
         if (!item.getAvailable()) {
             throw new ValidationException("Вещь с id " + item.getId() + " недоступна для бронирования");
         }
 
-        // Создание бронирования
         Booking booking = new Booking();
         booking.setStart(bookingCreateDto.getStart());
         booking.setEnd(bookingCreateDto.getEnd());
@@ -90,12 +84,10 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Только владелец вещи может подтверждать бронирование");
         }
 
-        // Проверка статуса
         if (booking.getStatus() != Booking.BookingStatus.WAITING) {
             throw new ValidationException("Бронирование уже обработано");
         }
 
-        // Обновление статуса
         booking.setStatus(approved ? Booking.BookingStatus.APPROVED : Booking.BookingStatus.REJECTED);
 
         Booking updatedBooking = bookingRepository.save(booking);
@@ -118,7 +110,6 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getUserBookings(Long userId, BookingState state) {
         log.info("Запрос бронирований пользователя id: {} со статусом: {}", userId, state);
 
-        // Проверка существования пользователя
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }

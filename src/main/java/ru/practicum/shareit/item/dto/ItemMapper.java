@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.dto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,16 +52,13 @@ public class ItemMapper {
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
 
-        // Определяем последнее и следующее бронирование
         LocalDateTime now = LocalDateTime.now();
 
-        // Последнее бронирование (самое позднее из завершенных)
         Booking lastBooking = bookings.stream()
                 .filter(b -> b.getEnd().isBefore(now))
                 .max((b1, b2) -> b1.getEnd().compareTo(b2.getEnd()))
                 .orElse(null);
 
-        // Следующее бронирование (самое раннее из будущих)
         Booking nextBooking = bookings.stream()
                 .filter(b -> b.getStart().isAfter(now))
                 .min((b1, b2) -> b1.getStart().compareTo(b2.getStart()))

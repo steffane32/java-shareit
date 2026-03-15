@@ -15,13 +15,11 @@ public class BookingMapper {
         dto.setEnd(booking.getEnd());
         dto.setStatus(booking.getStatus());
 
-        // Информация о вещи
         BookingDto.ItemDto itemDto = new BookingDto.ItemDto();
         itemDto.setId(booking.getItem().getId());
         itemDto.setName(booking.getItem().getName());
         dto.setItem(itemDto);
 
-        // Информация о бронирующем
         BookingDto.BookerDto bookerDto = new BookingDto.BookerDto();
         bookerDto.setId(booking.getBooker().getId());
         bookerDto.setName(booking.getBooker().getName());
