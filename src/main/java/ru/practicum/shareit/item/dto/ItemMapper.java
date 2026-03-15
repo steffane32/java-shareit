@@ -1,6 +1,12 @@
 package ru.practicum.shareit.item.dto;
 
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemMapper {
 
@@ -33,7 +39,58 @@ public class ItemMapper {
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
 
-
         return item;
+    }
+
+    public static ItemWithBookingsDto toItemWithBookingsDto(Item item, List<Booking> bookings, List<Comment> comments) {
+        if (item == null) {
+            return null;
+        }
+
+        ItemWithBookingsDto dto = new ItemWithBookingsDto();
+        dto.setId(item.getId());
+        dto.setName(item.getName());
+        dto.setDescription(item.getDescription());
+        dto.setAvailable(item.getAvailable());
+
+        // Определяем последнее и следующее бронирование
+        LocalDateTime now = LocalDateTime.now();
+
+        // Последнее бронирование (самое позднее из завершенных)
+        Booking lastBooking = bookings.stream()
+                .filter(b -> b.getEnd().isBefore(now))
+                .max((b1, b2) -> b1.getEnd().compareTo(b2.getEnd()))
+                .orElse(null);
+
+        // Следующее бронирование (самое раннее из будущих)
+        Booking nextBooking = bookings.stream()
+                .filter(b -> b.getStart().isAfter(now))
+                .min((b1, b2) -> b1.getStart().compareTo(b2.getStart()))
+                .orElse(null);
+
+        if (lastBooking != null) {
+            ItemWithBookingsDto.BookingInfoDto lastBookingDto = new ItemWithBookingsDto.BookingInfoDto();
+            lastBookingDto.setId(lastBooking.getId());
+            lastBookingDto.setBookerId(lastBooking.getBooker().getId());
+            dto.setLastBooking(lastBookingDto);
+        }
+
+        if (nextBooking != null) {
+            ItemWithBookingsDto.BookingInfoDto nextBookingDto = new ItemWithBookingsDto.BookingInfoDto();
+            nextBookingDto.setId(nextBooking.getId());
+            nextBookingDto.setBookerId(nextBooking.getBooker().getId());
+            dto.setNextBooking(nextBookingDto);
+        }
+
+        if (comments != null) {
+            List<CommentDto> commentDtos = comments.stream()
+                    .map(CommentMapper::toCommentDto)
+                    .collect(Collectors.toList());
+            dto.setComments(commentDtos);
+        } else {
+            dto.setComments(List.of());
+        }
+
+        return dto;
     }
 }
