@@ -14,16 +14,4 @@ public class BookingDto {
     private BookerDto booker;
     private ItemDto item;
     private Booking.BookingStatus status;
-
-    @Data
-    public static class BookerDto {
-        private Long id;
-        private String name;
-    }
-
-    @Data
-    public static class ItemDto {
-        private Long id;
-        private String name;
-    }
 }

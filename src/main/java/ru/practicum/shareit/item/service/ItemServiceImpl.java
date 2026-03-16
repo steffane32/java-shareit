@@ -43,8 +43,9 @@ public class ItemServiceImpl implements ItemService {
 
         List<Long> itemIds = items.stream().map(Item::getId).collect(Collectors.toList());
 
+        // ИСПРАВЛЕНО: используем новый метод с параметром status
         Map<Long, List<Booking>> bookingsByItem = bookingRepository
-                .findApprovedBookingsByItemIds(itemIds)
+                .findBookingsByItemIdsAndStatus(itemIds, Booking.BookingStatus.APPROVED)
                 .stream()
                 .collect(Collectors.groupingBy(b -> b.getItem().getId()));
 
@@ -71,7 +72,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<Booking> bookings = List.of();
         if (item.getOwner().getId().equals(userId)) {
-            bookings = bookingRepository.findApprovedBookingsByItemId(id);
+            bookings = bookingRepository.findBookingsByItemIdAndStatus(id, Booking.BookingStatus.APPROVED);
         }
 
         List<Comment> comments = commentRepository.findByItemId(id);
@@ -164,7 +165,13 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
 
         LocalDateTime now = LocalDateTime.now();
-        boolean hasUserBooked = bookingRepository.hasUserBookedItem(itemId, userId, now);
+
+        boolean hasUserBooked = bookingRepository.hasUserBookedAndFinished(
+                itemId,
+                userId,
+                Booking.BookingStatus.APPROVED,
+                now
+        );
 
         if (!hasUserBooked) {
             throw new ValidationException("Пользователь не может оставить отзыв, так как не арендовал эту вещь");

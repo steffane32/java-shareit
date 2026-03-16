@@ -20,7 +20,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.item.owner.id = :ownerId")
     List<Booking> findByItemOwnerId(@Param("ownerId") Long ownerId, Sort sort);
 
-    List<Booking> findByBookerIdAndStatus(Long bookerId, Booking.BookingStatus status, Sort sort);
+    List<Booking> findByBookerIdAndStatus(Long bookerId,
+                                          @Param("status") Booking.BookingStatus status,
+                                          Sort sort);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.owner.id = :ownerId " +
@@ -61,23 +63,26 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
             "WHERE b.item.id = :itemId " +
             "AND b.booker.id = :userId " +
-            "AND b.status = 'APPROVED' " +
+            "AND b.status = :status " +
             "AND b.end < :now")
-    boolean hasUserBookedItem(@Param("itemId") Long itemId,
-                              @Param("userId") Long userId,
-                              @Param("now") LocalDateTime now);
+    boolean hasUserBookedAndFinished(@Param("itemId") Long itemId,
+                                     @Param("userId") Long userId,
+                                     @Param("status") Booking.BookingStatus status,
+                                     @Param("now") LocalDateTime now);
 
     List<Booking> findByItemId(Long itemId);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.id = :itemId " +
-            "AND b.status = 'APPROVED'")
-    List<Booking> findApprovedBookingsByItemId(@Param("itemId") Long itemId);
+            "AND b.status = :status")
+    List<Booking> findBookingsByItemIdAndStatus(@Param("itemId") Long itemId,
+                                                @Param("status") Booking.BookingStatus status);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.id IN :itemIds " +
-            "AND b.status = 'APPROVED'")
-    List<Booking> findApprovedBookingsByItemIds(@Param("itemIds") List<Long> itemIds);
+            "AND b.status = :status")
+    List<Booking> findBookingsByItemIdsAndStatus(@Param("itemIds") List<Long> itemIds,
+                                                 @Param("status") Booking.BookingStatus status);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.id = :bookingId " +

@@ -54,15 +54,10 @@ public class BookingServiceImpl implements BookingService {
         }
 
         if (!item.getAvailable()) {
-            throw new ValidationException("Вещь с id " + item.getId() + " недоступна для бронирования");
+            throw new ValidationException("Вещь недоступна для бронирования");
         }
 
-        Booking booking = new Booking();
-        booking.setStart(bookingCreateDto.getStart());
-        booking.setEnd(bookingCreateDto.getEnd());
-        booking.setItem(item);
-        booking.setBooker(booker);
-        booking.setStatus(Booking.BookingStatus.WAITING);
+        Booking booking = BookingMapper.toBooking(bookingCreateDto, item, booker);
 
         Booking savedBooking = bookingRepository.save(booking);
         log.info("Бронирование создано с id: {}", savedBooking.getId());
@@ -79,7 +74,6 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с id " + bookingId + " не найдено"));
 
-        // Проверка, что пользователь - владелец вещи
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new NotFoundException("Только владелец вещи может подтверждать бронирование");
         }
