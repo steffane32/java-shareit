@@ -43,21 +43,38 @@ jobs:
           done
           
       - name: Build with Maven
-        run: mvn clean package
+        run: mvn clean package -DskipTests
         
-      - name: Start application
+      - name: Start Server
         run: |
-          mvn spring-boot:start &
-          echo "Waiting for application to start..."
-          for i in {1..60}; do
-            if curl -s http://localhost:8080/actuator/health > /dev/null; then
-              echo "Application started successfully"
-              exit 0
+          cd server
+          nohup mvn spring-boot:run &
+          cd ..
+          echo "Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:9090/actuator/health > /dev/null; then
+              echo "Server started successfully"
+              break
             fi
-            echo "Waiting for application... $i/60"
+            echo "Waiting for server... $i/30"
             sleep 2
           done
-          echo "Application failed to start"
+          
+      - name: Start Gateway
+        run: |
+          cd gateway
+          nohup mvn spring-boot:run &
+          cd ..
+          echo "Waiting for gateway to start..."
+          for i in {1..60}; do
+            if curl -s http://localhost:8080/actuator/health > /dev/null; then
+              echo "Gateway started successfully"
+              exit 0
+            fi
+            echo "Waiting for gateway... $i/60"
+            sleep 2
+          done
+          echo "Gateway failed to start"
           exit 1
           
       - name: Run tests
