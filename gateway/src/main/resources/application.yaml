@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: ShareIt Gateway
+
+server:
+  port: 8080
+
+shareit-server:
+  url: http://localhost:9090
+
+logging:
+  level:
+    ru.practicum: DEBUG
+    org.springframework.web: INFO
+    org.springframework.web.client: DEBUG
